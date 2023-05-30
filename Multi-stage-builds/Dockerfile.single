@@ -1,0 +1,22 @@
+FROM python:3.11.3-alpine3.18
+# setup env
+ENV LANG C.UTF-8
+ENV LC_ALL C.UTF-8
+# avoid writing .pyc .pyo files
+ENV PYTHONDONTWRITEBYTECODE 1
+# exclude defaulthandler
+ENV PYTHONFAULTHANDLER 1
+
+# install pipenv and compilation dependencies
+RUN pip install pipenv
+# install python dependencies in /.venv
+COPY Pipfile .
+COPY Pipfile.lock .
+RUN PIPENV_VENV_IN_PROJECT=1 pipenv install --deploy
+# enable venv
+ENV PATH="/.venv/bin:$PATH"
+
+WORKDIR /app
+# copy application into container
+COPY main.py .
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "80"]
